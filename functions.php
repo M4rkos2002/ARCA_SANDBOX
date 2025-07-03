@@ -1,5 +1,39 @@
 <?php
 
+function callWSLSP($taFile) {
+    $wsdl = "https://fwshomo.afip.gov.ar/wslsp/LspService";
+
+    try {
+        $taXml = simplexml_load_string(file_get_contents($taFile));
+
+        $token = (string)$taXml->credentials->token;
+        $sign = (string)$taXml->credentials->sign;
+        $cuit = '20445609103';
+
+        $auth = [
+            'token' => $token,
+            'sign' => $sign,
+            'cuit' => $cuit,
+        ];
+
+        $client = new SoapClient($wsdl, [
+            'trace' => 1,
+            'exceptions' => true,
+            'cache_wsdl' => WSDL_CACHE_NONE,
+        ]);
+
+
+        $params = ['auth' => $auth];
+
+        $response = $client->__soapCall('dummy', [$params]);
+
+        var_dump($response);
+
+    } catch (SoapFault $e) {
+        echo "⛔ SOAP Fault: " . $e->getMessage() . "\n\n";
+    }
+}
+
 function CallWSAA($cms) {
     $context = stream_context_create([
         'ssl' => [
