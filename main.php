@@ -12,7 +12,17 @@ require_once 'functions.php';
  * * 5) Crear el TRA que corresponde al XML a usar para comunicarse con el sistema
  * * 6) Se obtiene el token para el sevicio
  */
-CreateTRA("wslsp");
-$CMS = SignTRA('/config/test/certificados/public2.pem', '/config/test/certificados/private.key');
-$TA = CallWSAA($CMS);
-//callWSLSP("TA.xml");
+
+header('Content-Type: application/json');
+$service = $_GET['service'] ?? 'wslsp';
+
+try {
+    CreateTRA($service);
+    $CMS = SignTRA('/config/test/certificados/public2.pem', '/config/test/certificados/private.key');
+    $TA = CallWSAA($CMS);
+
+    header('Content-Type: application/xml');
+    echo $TA;
+} catch (Exception $e) {
+    echo $e->getMessage();
+}

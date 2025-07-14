@@ -57,7 +57,18 @@ function CallWSAA($cms) {
     $response = $client->loginCms(["in0" => $cms]);
 
     if (is_soap_fault($response)) {
-        exit("Error: " . $response->faultcode . " - " . $response->faultstring);
+        $faultString = isset($response->faultstring) ? $response->faultstring : '';
+        $faultCode = $response->faultcode ?? 'Sin código';
+
+        if (stripos($faultCode, 'ns1:coe.alreadyAuthenticated') !== false) {
+            if (file_exists("TA.xml")) {
+                return file_get_contents("TA.xml");
+            } else {
+                throw new Exception("TA ya autenticado pero no se encontró TA.xml");
+            }
+        }   //SOAP Fault:  - El CEE ya posee un TA valido para el acceso al WSN solicitado
+
+        throw new Exception("SOAP Fault: $faultCode - $faultString");
     }
 
     file_put_contents("TA.xml", $response->loginCmsReturn);
